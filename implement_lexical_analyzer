@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_LEN 100
+
+/* list of C keywords (you can add more) */
+const char *keywords[] = {
+    "auto","break","case","char","const","continue","default",
+    "do","double","else","enum","extern","float","for",
+    "goto","if","int","long","register","return","short",
+    "signed","sizeof","static","struct","switch","typedef",
+    "union","unsigned","void","volatile","while"
+};
+const int KEYWORD_COUNT = 32;
+
+int isKeyword(const char *str) {
+    for (int i = 0; i < KEYWORD_COUNT; i++) {
+        if (strcmp(str, keywords[i]) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+int main() {
+    FILE *fp;
+    char ch;
+    char buffer[MAX_LEN];
+    int idx;
+
+    fp = fopen("input.c", "r");   /* change file name as needed */
+    if (fp == NULL) {
+        printf("Cannot open source file.\n");
+        return 1;
+    }
+
+    while ((ch = fgetc(fp)) != EOF) {
+
+        /* identifiers / keywords */
+        if (isalpha(ch) || ch == '_') {
+            idx = 0;
+            buffer[idx++] = ch;
+            while ((ch = fgetc(fp)) != EOF &&
+                   (isalnum(ch) || ch == '_')) {
+                if (idx < MAX_LEN - 1)
+                    buffer[idx++] = ch;
+            }
+            buffer[idx] = '\0';
+            if (isKeyword(buffer))
+                printf("<KEYWORD, %s>\n", buffer);
+            else
+                printf("<IDENTIFIER, %s>\n", buffer);
+
+            if (ch == EOF) break;
+            ungetc(ch, fp);   /* put back the extra char */
+        }
+
+        /* numbers */
+        else if (isdigit(ch)) {
+            idx = 0;
+            buffer[idx++] = ch;
+            while ((ch = fgetc(fp)) != EOF && isdigit(ch)) {
+                if (idx < MAX_LEN - 1)
+                    buffer[idx++] = ch;
+            }
+            buffer[idx] = '\0';
+            printf("<NUMBER, %s>\n", buffer);
+
+            if (ch == EOF) break;
+            ungetc(ch, fp);
+        }
+
+        /* operators and separators (extend as needed) */
+        else {
+            switch (ch) {
+                case '+': printf("<OPERATOR, +>\n"); break;
+                case '-': printf("<OPERATOR, ->\n"); break;
+                case '*': printf("<OPERATOR, *>\n"); break;
+                case '/': printf("<OPERATOR, />\n"); break;
+                case '=': printf("<OPERATOR, =>\n"); break;
+                case ';': printf("<SEPARATOR, ;>\n"); break;
+                case ',': printf("<SEPARATOR, ,>\n"); break;
+                case '(': printf("<SEPARATOR, (>\n"); break;
+                case ')': printf("<SEPARATOR, )>\n"); break;
+                case '{': printf("<SEPARATOR, {>\n"); break;
+                case '}': printf("<SEPARATOR, }>\n"); break;
+                default:
+                    /* ignore whitespace; treat others as unknown */
+                    if (!isspace((unsigned char)ch))
+                        printf("<UNKNOWN, %c>\n", ch);
+            }
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
