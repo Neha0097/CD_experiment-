@@ -1,0 +1,8 @@
+DAG Representation:
+
+Node 0: b -> []
+Node 1: c -> []
+Node 2: (b + c) -> ['a', 'd']
+Node 3: a -> []
+Node 4: d -> []
+Node 5: (a + d) -> ['e']
